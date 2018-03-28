@@ -1,0 +1,264 @@
+
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+<title>Spring Boot AngularJS example</title>
+<script type="text/javascript">
+            var app = angular.module("CustomerManagement", []);
+         
+            //Controller Part
+            app.controller("CustomerController", function($scope, $http) {
+         
+               
+                $scope.customers = [];
+                $scope.customerForm = {
+                    id : '',
+                    brand : "",
+                    model : "",
+                    processorSpeed : '',
+                	ram : '',
+                	diskCapacity : '',
+                	price : ''
+                };
+         
+                //Now load the data from server
+                _refreshCustomerData();
+         
+                //HTTP POST/PUT methods for add/edit customer 
+                // with the help of id, we are going to find out whether it is put or post operation
+                
+                $scope.submitCustomer = function() {
+         
+                    var method = "";
+                    var url = "";
+                    if ($scope.customerForm.id == '') {
+                        //Id is absent in form data, it is create new customer operation
+                        method = "POST";
+                        url = '/addCustomer';
+                    } else {
+                        //Id is present in form data, it is edit customer operation
+                        method = "PUT";
+                        url = '/addCustomer';
+                    }
+         
+                    $http({
+                        method : method,
+                        url : url,
+                        data : angular.toJson($scope.customerForm),
+                        headers : {
+                            'Content-Type' : 'application/json'
+                        }
+                    }).then( _success, _error );
+                };
+         
+                //HTTP DELETE- delete customer by Id
+                $scope.deleteCustomer = function(customer) {
+                    $http({
+                        method : 'DELETE',
+                        url : '/deleteCustomer/' + customer.id
+                    }).then(_success, _error);
+                };
+ 
+             // In case of edit, populate form fields and assign form.id with customer id
+                $scope.editCustomer = function(customer) {
+                  
+                    $scope.customerForm.price = customer.price;
+                    $scope.customerForm.diskCapacity = customer.diskCapacity;
+                    $scope.customerForm.ram = customer.ram;
+                    $scope.customerForm.processorSpeed = customer.processorSpeed;
+                    $scope.customerForm.model = customer.model;
+                    $scope.customerForm.brand = customer.brand;
+                    $scope.customerForm.id = customer.id;
+                };
+         
+                /* Private Methods */
+                //HTTP GET- get all customers collection
+                function _refreshCustomerData() {
+                    $http({
+                        method : 'GET',
+                        url : 'http://localhost:8080/getAllCustomers'
+                    }).then(function successCallback(response) {
+                        $scope.customers = response.data;
+                    }, function errorCallback(response) {
+                        console.log(response.statusText);
+                    });
+                }
+         
+                function _success(response) {
+                    _refreshCustomerData();
+                    _clearFormData()
+                }
+         
+                function _error(response) {
+                    console.log(response.statusText);
+                }
+         
+                //Clear the form
+                function _clearFormData() {
+                    $scope.customerForm.id = '';
+                    $scope.customerForm.brand = "";
+                    $scope.customerForm.model = "";
+                    $scope.customerForm.processorSpeed = '';
+                    $scope.customerForm.ram = '';
+                    $scope.customerForm.diskCapacity = '';
+                    $scope.customerForm.price = '';
+                };
+            });
+        </script>
+<style>
+.blue-button {
+	background: #25A6E1;
+	filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#25A6E1',
+		endColorstr='#188BC0', GradientType=0);
+	padding: 3px 5px;
+	color: #fff;
+	font-family: 'Helvetica Neue', sans-serif;
+	font-size: 12px;
+	border-radius: 2px;
+	-moz-border-radius: 2px;
+	-webkit-border-radius: 4px;
+	border: 1px solid #1A87B9
+}
+
+.red-button {
+	background: #CD5C5C;
+	padding: 3px 5px;
+	color: #fff;
+	font-family: 'Helvetica Neue', sans-serif;
+	font-size: 12px;
+	border-radius: 2px;
+	-moz-border-radius: 2px;
+	-webkit-border-radius: 4px;
+	border: 1px solid #CD5C5C
+}
+
+table {
+	font-family: "Helvetica Neue", Helvetica, sans-serif;
+	width: 50%;
+}
+
+caption {
+	text-align: left;
+	color: silver;
+	font-weight: bold;
+	text-transform: uppercase;
+	padding: 5px;
+}
+
+th {
+	background: SteelBlue;
+	color: white;
+}
+
+tbody tr:nth-child(even) {
+	background: WhiteSmoke;
+}
+
+tbody tr td:nth-child(2) {
+	text-align: center;
+}
+
+tbody tr td:nth-child(3), tbody tr td:nth-child(4) {
+	text-align: center;
+	font-family: monospace;
+}
+
+tfoot {
+	background: SeaGreen;
+	color: white;
+	text-align: right;
+}
+
+tfoot tr th:last-child {
+	font-family: monospace;
+}
+
+td, th {
+	border: 1px solid gray;
+	width: 25%;
+	text-align: left;
+	padding: 5px 10px;
+}
+</style>
+<head>
+<body ng-app="CustomerManagement" ng-controller="CustomerController">
+	<h1 align="center">Computer Mart</h1>
+	<form ng-submit="submitCustomer()">
+		<table align="center">
+			<!-- <tr>
+				<td>Id</td>
+				<td><input type="text" ng-model="customerForm.id" /></td>
+			</tr> -->
+			
+			<tr>
+				<td>Brand</td>
+				<td><input type="text" ng-model="customerForm.brand" /></td>
+			</tr>
+			<tr>
+				<td>Model</td>
+				<td><input type="text" ng-model="customerForm.model" /></td>
+			</tr>
+			<tr>
+				<td>ProcessorSpeed</td>
+				<td><input type="text" ng-model="customerForm.processorSpeed" /></td>
+			</tr>
+			<tr>
+				<td>Ram</td>
+				<td><input type="text" ng-model="customerForm.ram" /></td>
+			</tr>
+			<tr>
+				<td>DiskCapacity</td>
+				<td><input type="text" ng-model="customerForm.diskCapacity" /></td>
+			</tr>
+			<tr>
+				<td>Price</td>
+				<td><input type="text" ng-model="customerForm.price" /></td>
+			</tr>
+			
+			<!-- <tr>
+				<td colspan="2"><input type="submit" value="Submit"
+					class="blue-button" /></td>
+			</tr> -->
+			<tr>
+				<td colspan="2"><button class="btn btn-success"><i class="glyphicon glyphicon-floppy-save"></i>Save</button></td>
+			</tr>
+			
+		</table>
+	</form>
+	
+	<h2 align="center">List of Computer Details</h2>
+	<table align="center">
+		<tr>
+
+			<th>ID</th>
+			<th>Brand</th>
+			<th>Model</th>
+			<th>ProcessorSpeed</th>
+			<th>Ram</th>
+			<th>DiskCapacity</th>
+			<th>Price</th>
+			<th>Operations</th>
+
+		</tr>
+
+		<tr ng-repeat="customer in customers">
+			<td>{{ customer.id }}</td>
+			<td>{{ customer.brand }}</td>
+			<td>{{ customer.model }}</td>
+			<td>{{ customer.processorSpeed }}</td>
+			<td>{{ customer.ram }}</td>
+			<td>{{ customer.diskCapacity }}</td>
+			<td>{{ customer.price }}</td>
+
+			<!-- <td><a ng-click="editCustomer(customer)" class="blue-button">Edit</a>
+				| <a ng-click="deleteCustomer(customer)" class="red-button">Delete</a></td> -->
+			<td><button type="button" class="btn btn-default" ng-click="editCustomer(customer)"><i class="glyphicon glyphicon-pencil"></i></button>
+				<button type="button" class="btn btn-danger" ng-click="deleteCustomer(customer)"><i class="glyphicon glyphicon-trash"></i></button></td>
+		
+		</tr>
+
+	</table>
+</body>
+</html>
